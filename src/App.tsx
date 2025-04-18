@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import './App.css'
 import Form from './components/Form';
 import MemoryCard, { type Card } from './components/MemoryCard';
+import AssistiveTechInfo from './components/AssistiveTechInfo';
+import GameOver from './components/GameOver';
 
 export type Emoji = {
   name: string;
@@ -19,10 +21,8 @@ function App() {
   const [emojisData, setEmojisData] = useState([] as Emoji[]);
   const [selectedCards, setSelectedCards] = useState([] as Card[]);
   const [matchedCards, setMatchedCards] = useState([] as Card[]);
-  const [isGameOver, setIsGameOver] = useState(false);
-
-
-  console.log(selectedCards)
+  const [areAllCardsMatched, setAreAllCardsMatched] = useState(false);
+  const [isError, setIsError] = useState(false);
   useEffect(() => {
     if (selectedCards.length === 2) {
       const [firstCard, secondCard] = selectedCards;
@@ -35,7 +35,7 @@ function App() {
 
   useEffect(() => {
     if (emojisData.length && matchedCards.length === emojisData.length) {
-      setIsGameOver(true);
+      setAreAllCardsMatched(true);
     }
   }, [emojisData, matchedCards]);
 
@@ -80,16 +80,22 @@ function App() {
   }
 
   function turnCard({name, index} : Card) {
-    const selectedCardEntry = selectedCards.find(card => card.index === index);
-    if (!selectedCardEntry) {
-      setSelectedCards(selectedCards.length < 2 ? (prev => [...prev, { name, index }]) : [{ name, index }]);
-    }
+    setSelectedCards(selectedCards.length < 2 ? (prev => [...prev, { name, index }]) : [{ name, index }]);
+  }
+
+  function resetGame() {
+    setIsGameOn(false);
+    setSelectedCards([]);
+    setMatchedCards([]);
+    setAreAllCardsMatched(false);
   }
 
   return (
     <main>
-      <h1>Memory</h1>
+      <h1>Memory game</h1>
       {!isGameOn && <Form handleSubmit={startGame} />}
+      {isGameOn && !areAllCardsMatched && <AssistiveTechInfo emojisData={emojisData} matchedCards={matchedCards}/>}
+      {areAllCardsMatched && <GameOver handleClick={resetGame}/>}
       {isGameOn && 
         <MemoryCard
           handleClick={turnCard}

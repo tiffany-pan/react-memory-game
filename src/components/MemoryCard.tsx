@@ -1,4 +1,3 @@
-import { decodeEntity } from 'html-entities';
 import EmojiButton from './EmojiButton';
 import { type Emoji } from '../App';
 
@@ -27,10 +26,11 @@ export default function MemoryCard({ handleClick, data, selectedCards, matchedCa
     return (
       <li key={index} className={`card-item ${cardStyle}`}>
         <EmojiButton
-          content={decodeEntity(emoji.htmlCode[0])}
+          emoji={emoji}
           handleClick={() => handleClick({name: emoji.name, index})}
           selectedCardEntry={selectedCardEntry}
           matchedCardEntry={matchedCardEntry}
+          index={index}
         />
       </li>
     );
