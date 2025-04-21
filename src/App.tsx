@@ -18,12 +18,19 @@ export type Emoji = {
 }
 
 function App() {
+  const initialFormData = {
+    category: 'animals-and-nature',
+    number: 10,
+  };
+
   const [isGameOn, setIsGameOn] = useState(false);
   const [emojisData, setEmojisData] = useState([] as Emoji[]);
   const [selectedCards, setSelectedCards] = useState([] as Card[]);
   const [matchedCards, setMatchedCards] = useState([] as Card[]);
   const [areAllCardsMatched, setAreAllCardsMatched] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [formData, setFormData] = useState(initialFormData);
+  const [isFirstRender, setIsFirstRender] = useState(true);
 
   useEffect(() => {
     if (selectedCards.length === 2) {
@@ -41,11 +48,19 @@ function App() {
     }
   }, [emojisData, matchedCards]);
 
+  function handleFormChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+
   async function startGame(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
 
     try {
-      const response = await fetch("https://emojihub.yurace.pro/api/all/category/animals-and-nature");
+      const response = await fetch(`https://emojihub.yurace.pro/api/all/category/${formData.category}`);
       if (response.ok) {
         const data = await response.json();
         getEmojis(data);
@@ -56,6 +71,8 @@ function App() {
     } catch (err) {
       console.error(err);
       setIsError(true);
+    } finally {
+      setIsFirstRender(false);
     }
   }
 
@@ -63,7 +80,7 @@ function App() {
     // Get random 5 unique emojis
     const randomIndices = new Set<number>();
     const totalEmojis = data.length;
-    while (randomIndices.size < 5) {
+    while (randomIndices.size < formData.number / 2) {
       const randomIndex = Math.floor(Math.random() * totalEmojis);
       randomIndices.add(randomIndex);
     }
@@ -100,7 +117,7 @@ function App() {
   return (
     <main>
       <h1>Memory game</h1>
-      {!isGameOn && !isError && <Form handleSubmit={startGame} />}
+      {!isGameOn && !isError && <Form handleSubmit={startGame} handleChange={handleFormChange} isFirstRender={isFirstRender} />}
       {isGameOn && !areAllCardsMatched && <AssistiveTechInfo emojisData={emojisData} matchedCards={matchedCards}/>}
       {areAllCardsMatched && <GameOver handleClick={resetGame}/>}
       {isGameOn && 
